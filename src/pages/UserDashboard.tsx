@@ -15,9 +15,15 @@ import { ConnectionStatusBanner } from "@/components/ConnectionStatusBanner";
 
 const UserDashboard = () => {
   const { user, logout } = useSimpleAuth();
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [shops, setShops] = useState<Shop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/auth");
+  };
 
   useEffect(() => {
     const fetchShops = async () => {
