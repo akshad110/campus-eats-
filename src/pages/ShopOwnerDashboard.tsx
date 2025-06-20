@@ -56,9 +56,15 @@ const mockShopData = {
 
 const ShopOwnerDashboard = () => {
   const { user, logout } = useSimpleAuth();
+  const navigate = useNavigate();
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [shops, setShops] = useState<Shop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/auth");
+  };
 
   useEffect(() => {
     const fetchShops = async () => {
