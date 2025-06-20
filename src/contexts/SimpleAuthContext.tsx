@@ -10,6 +10,12 @@ interface User {
 interface SimpleAuthContextType {
   user: User | null;
   login: (email: string, password: string, role: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    name: string,
+    role: string,
+  ) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -48,16 +54,49 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const register = async (
+    email: string,
+    password: string,
+    name: string,
+    role: string,
+  ) => {
+    try {
+      const response = await fetch("http://localhost:3001/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name, role }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || "Registration failed");
+      }
+
+      const user = data.data.user;
+      setUser(user);
+      localStorage.setItem("simple_user", JSON.stringify(user));
+      localStorage.setItem("auth_token", data.data.token);
+    } catch (error) {
+      console.error("Registration error:", error);
+      throw new Error("Registration failed. Please try again.");
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("simple_user");
+    localStorage.removeItem("auth_token");
   };
 
   const isAuthenticated = !!user;
 
   return (
     <SimpleAuthContext.Provider
-      value={{ user, login, logout, isAuthenticated }}
+      value={{ user, login, register, logout, isAuthenticated }}
     >
       {children}
     </SimpleAuthContext.Provider>
