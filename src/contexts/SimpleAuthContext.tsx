@@ -28,83 +28,19 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   const login = async (email: string, password: string, role: string) => {
-    try {
-      const response = await fetch("http://localhost:3001/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role }),
-      });
-
-      if (!response.ok) {
-        // Try to parse error response for database connection issues
-        try {
-          const errorData = await response.json();
-          if (errorData.error && errorData.error.includes("ECONNREFUSED")) {
-            console.warn("Database connection failed, using demo login");
-            const demoUser: User = {
-              id: `demo_${Date.now()}`,
-              email,
-              name: email.split("@")[0],
-              role: role as User["role"],
-            };
-            setUser(demoUser);
-            localStorage.setItem("simple_user", JSON.stringify(demoUser));
-            localStorage.setItem("auth_token", `demo_token_${Date.now()}`);
-            return;
-          }
-        } catch (parseError) {
-          // Continue to fallback if we can't parse the error
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!data.success) {
-        // Check if it's a database connection error
-        if (data.error && data.error.includes("ECONNREFUSED")) {
-          console.warn("Database connection failed, using demo login");
-          // Create a demo user when database is not available
-          const demoUser: User = {
-            id: `demo_${Date.now()}`,
-            email,
-            name: email.split("@")[0],
-            role: role as User["role"],
-          };
-          setUser(demoUser);
-          localStorage.setItem("simple_user", JSON.stringify(demoUser));
-          localStorage.setItem("auth_token", `demo_token_${Date.now()}`);
-          return;
-        }
-        throw new Error(data.error || "Login failed");
-      }
-
-      const user = data.data.user;
-      setUser(user);
-      localStorage.setItem("simple_user", JSON.stringify(user));
-      localStorage.setItem("auth_token", data.data.token);
-    } catch (error) {
-      console.error("Login error:", error);
-      // Check if it's a network error (database not available)
-      if (
-        error instanceof TypeError &&
-        error.message.includes("Failed to fetch")
-      ) {
-        console.warn("🔄 Backend not available, switching to demo mode...");
-        const demoUser: User = {
-          id: `demo_${Date.now()}`,
-          email,
-          name: email.split("@")[0],
-          role: role as User["role"],
-        };
-        setUser(demoUser);
-        localStorage.setItem("simple_user", JSON.stringify(demoUser));
-        localStorage.setItem("auth_token", `demo_token_${Date.now()}`);
-        console.log("✅ Demo login successful:", demoUser.name);
-        return; // Successfully handled with demo login
-      }
-      // Only throw error if it's not a network issue that we can handle
-      throw new Error("Login failed. Please check your credentials.");
-    }
+    // Always use demo mode for now since database is not available
+    console.warn("🔄 Using demo mode (backend/database unavailable)");
+    const demoUser: User = {
+      id: `demo_${Date.now()}`,
+      email,
+      name: email.split("@")[0],
+      role: role as User["role"],
+    };
+    setUser(demoUser);
+    localStorage.setItem("simple_user", JSON.stringify(demoUser));
+    localStorage.setItem("auth_token", `demo_token_${Date.now()}`);
+    console.log("✅ Demo login successful:", demoUser.name);
+    return;
   };
 
   const register = async (
