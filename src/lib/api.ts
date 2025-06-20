@@ -294,13 +294,20 @@ class ApiService {
     } else {
       console.log("🏗️ Creating shop in MySQL database");
 
-      // Get user data for owner ID
-      const userData = localStorage.getItem("user_data");
-      if (!userData) {
-        throw new Error("User not logged in");
-      }
+      // Use provided ownerId or get from localStorage
+      let ownerId = shopData.ownerId;
 
-      const user = JSON.parse(userData);
+      if (!ownerId) {
+        // Fallback to localStorage if ownerId not provided
+        let userData =
+          localStorage.getItem("simple_user") ||
+          localStorage.getItem("user_data");
+        if (!userData) {
+          throw new Error("User not logged in");
+        }
+        const user = JSON.parse(userData);
+        ownerId = user.id;
+      }
 
       try {
         const response = await fetch(`${API_BASE_URL}/shops`, {
@@ -315,7 +322,7 @@ class ApiService {
             location: shopData.location || "Unknown Location",
             phone: shopData.phone || "",
             image: shopData.image || "/placeholder.svg",
-            ownerId: user.id,
+            ownerId: ownerId,
           }),
         });
 
