@@ -39,6 +39,12 @@ const CreateShop = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!user?.id) {
+      alert("Please log in to create a shop");
+      navigate("/auth");
+      return;
+    }
+
     if (!formData.name.trim()) {
       alert("Please enter a shop name");
       return;
