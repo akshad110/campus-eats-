@@ -414,6 +414,18 @@ class ApiService {
         ownerId,
         isActive: true,
       });
+
+      // Debug: Show all shops and filter results
+      const allShops = await MockDatabase.findMany<DatabaseShop>("shops");
+      console.log(`📊 Total shops in database: ${allShops.length}`);
+      console.log(`🔍 Shops for owner ${ownerId}: ${dbShops.length}`);
+
+      if (dbShops.length === 0 && allShops.length > 0) {
+        console.log(
+          "ℹ️ User has no shops yet. They need to create their first shop.",
+        );
+      }
+
       const shops = dbShops.map(this.convertLocalShopToFrontend);
       console.log(`✅ Found ${shops.length} shops for owner`);
       return shops;
