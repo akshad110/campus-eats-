@@ -66,28 +66,32 @@ const ShopOwnerDashboard = () => {
     navigate("/auth");
   };
 
+  const fetchShops = async () => {
+    if (!user?.id) return;
+
+    try {
+      setIsLoading(true);
+      const userShops = await ShopService.getShopsByOwner(user.id);
+      setShops(userShops);
+      console.log("✅ Loaded shops for owner:", userShops.length);
+    } catch (error) {
+      console.error("Error fetching shops by owner:", error);
+      setShops([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchShops = async () => {
-      if (!user?.id) return;
-
-      try {
-        setIsLoading(true);
-        const userShops = await ShopService.getShopsByOwner(user.id);
-        setShops(userShops);
-      } catch (error) {
-        console.error("Error fetching shops by owner:", error);
-        // Set empty array as fallback to prevent further errors
-        setShops([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Only fetch if we haven't already done so
-    if (user?.id && shops.length === 0 && !isLoading) {
+    if (user?.id) {
       fetchShops();
     }
-  }, [user]);
+  }, [user?.id]);
+
+  // Function to refresh shops data
+  const refreshShops = () => {
+    fetchShops();
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -125,6 +129,9 @@ const ShopOwnerDashboard = () => {
               <span className="text-sm text-gray-600">
                 Welcome, {user?.name}!
               </span>
+              <Button variant="outline" size="sm" onClick={refreshShops}>
+                Refresh
+              </Button>
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 Logout
               </Button>
