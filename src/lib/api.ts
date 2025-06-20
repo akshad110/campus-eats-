@@ -1003,18 +1003,8 @@ class ApiService {
   }
 
   private static async ensureLocalStorageData(): Promise<void> {
-    // Initialize with sample data for development
-    try {
-      const existingShops = await MockDatabase.findMany("shops", {});
-      if (existingShops.length === 0) {
-        console.log("🔄 Initializing localStorage with sample data...");
-        await this.createLocalStorageFallbackData();
-      } else {
-        console.log("✅ LocalStorage data already exists");
-      }
-    } catch (error) {
-      console.error("❌ Error checking localStorage data:", error);
-    }
+    // Simple localStorage check without initialization
+    console.log("✅ LocalStorage ready");
     return;
   }
 
