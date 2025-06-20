@@ -27,12 +27,17 @@ const UserDashboard = () => {
         setShops(allShops);
       } catch (error) {
         console.error("Error fetching shops:", error);
+        // Set empty array as fallback to prevent further errors
+        setShops([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchShops();
+    // Only fetch once
+    if (shops.length === 0 && !isLoading) {
+      fetchShops();
+    }
   }, []);
 
   const categories = ["All", ...new Set(shops.map((shop) => shop.category))];
