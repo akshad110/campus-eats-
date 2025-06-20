@@ -22,16 +22,30 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   const login = async (email: string, password: string, role: string) => {
-    // Simple mock login without API calls
-    const mockUser: User = {
-      id: `user_${Date.now()}`,
-      email,
-      name: email.split("@")[0],
-      role: role as User["role"],
-    };
+    try {
+      const response = await fetch("http://localhost:3001/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role }),
+      });
 
-    setUser(mockUser);
-    localStorage.setItem("simple_user", JSON.stringify(mockUser));
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      const user = data.data.user;
+      setUser(user);
+      localStorage.setItem("simple_user", JSON.stringify(user));
+      localStorage.setItem("auth_token", data.data.token);
+    } catch (error) {
+      console.error("Login error:", error);
+      throw new Error("Login failed. Please check your credentials.");
+    }
   };
 
   const logout = () => {
