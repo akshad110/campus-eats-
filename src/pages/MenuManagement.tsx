@@ -294,6 +294,9 @@ const MenuManagement = () => {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">{user?.name}</span>
+              <Button variant="outline" size="sm" onClick={loadMenuItems}>
+                Refresh
+              </Button>
               <Button variant="outline" size="sm" onClick={logout}>
                 Logout
               </Button>
