@@ -786,9 +786,8 @@ class ApiService {
   // ==============================================================================
 
   static async initializeMockData(forceReset: boolean = false): Promise<void> {
-    console.log("🔄 Initializing localStorage data...");
-    await this.ensureLocalStorageData();
-    console.log("✅ LocalStorage initialized successfully");
+    console.log("✅ LocalStorage initialization skipped to prevent loops");
+    return;
   }
 
   static async createFallbackShops(): Promise<void> {
