@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import ShopService, { Shop } from "@/lib/shopService";
+import ShopService from "@/lib/shopService";
+import { Shop } from "@/lib/types";
 
 // Mock data for shop owner
 const mockShopData = {
