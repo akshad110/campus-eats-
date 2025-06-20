@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SimpleAuthProvider } from "./contexts/SimpleAuthContext";
 import SimpleLanding from "./pages/SimpleLanding";
 import SimpleAuth from "./pages/SimpleAuth";
+import SimpleSuccess from "./pages/SimpleSuccess";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const SimpleApp = () => {
             <Routes>
               <Route path="/" element={<SimpleLanding />} />
               <Route path="/auth" element={<SimpleAuth />} />
+              <Route path="/success" element={<SimpleSuccess />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
