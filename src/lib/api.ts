@@ -7,8 +7,8 @@ import {
   DatabaseOrder,
 } from "./database";
 
-// Use MySQL database for production - localStorage only as fallback
-const FORCE_LOCALSTORAGE_MODE = false;
+// Use localStorage mode to avoid backend connection issues
+const FORCE_LOCALSTORAGE_MODE = true;
 const API_BASE_URL = "http://localhost:3001/api";
 
 class ApiService {
@@ -809,7 +809,7 @@ class ApiService {
     shopId: string,
     category: string,
   ): Promise<void> {
-    console.log(`🍽️ Creating starter menu items for ${shopId} (${category})`);
+    console.log(`��️ Creating starter menu items for ${shopId} (${category})`);
 
     // Define starter menu items based on shop category
     const starterMenus: Record<string, any[]> = {
