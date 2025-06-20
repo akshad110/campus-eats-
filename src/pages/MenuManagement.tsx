@@ -60,6 +60,29 @@ const MenuManagement = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
+  // Load menu items for the shop
+  const loadMenuItems = async () => {
+    if (!shopId) return;
+
+    try {
+      setIsLoading(true);
+      const items = await ApiService.getMenuItems(shopId);
+      setMenuItems(items);
+      console.log("✅ Loaded menu items:", items.length);
+    } catch (error) {
+      console.error("❌ Failed to load menu items:", error);
+      setMenuItems([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (shopId) {
+      loadMenuItems();
+    }
+  }, [shopId]);
+
   // Form state for adding/editing items
   const [formData, setFormData] = useState({
     name: "",
@@ -97,29 +120,37 @@ const MenuManagement = () => {
     });
   };
 
-  const handleAddItem = () => {
-    if (!formData.name || !formData.price || !formData.category) {
+  const handleAddItem = async () => {
+    if (!formData.name || !formData.price || !formData.category || !shopId) {
       alert("Please fill in all required fields");
       return;
     }
 
-    const newItem: MenuItem = {
-      id: `item_${Date.now()}`,
-      name: formData.name,
-      description: formData.description,
-      price: parseFloat(formData.price),
-      category: formData.category,
-      preparationTime: parseInt(formData.preparationTime) || 5,
-      isAvailable: formData.isAvailable,
-      image: formData.image,
-    };
+    try {
+      const newItem = await ApiService.createMenuItem({
+        shopId,
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        category: formData.category,
+        preparationTime: parseInt(formData.preparationTime) || 5,
+        stockQuantity: 100, // Default stock
+        image: formData.image,
+        ingredients: [],
+        allergens: [],
+      });
 
-    setMenuItems([...menuItems, newItem]);
-    resetForm();
-    setIsAddDialogOpen(false);
+      setMenuItems([...menuItems, newItem]);
+      resetForm();
+      setIsAddDialogOpen(false);
+      console.log("✅ Menu item created:", newItem.name);
+    } catch (error) {
+      console.error("❌ Failed to create menu item:", error);
+      alert("Failed to create menu item. Please try again.");
+    }
   };
 
-  const handleEditItem = () => {
+  const handleEditItem = async () => {
     if (
       !editingItem ||
       !formData.name ||
@@ -130,38 +161,72 @@ const MenuManagement = () => {
       return;
     }
 
-    const updatedItem: MenuItem = {
-      ...editingItem,
-      name: formData.name,
-      description: formData.description,
-      price: parseFloat(formData.price),
-      category: formData.category,
-      preparationTime: parseInt(formData.preparationTime) || 5,
-      isAvailable: formData.isAvailable,
-      image: formData.image,
-    };
+    try {
+      const updatedData = {
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        category: formData.category,
+        preparationTime: parseInt(formData.preparationTime) || 5,
+        isAvailable: formData.isAvailable,
+        image: formData.image,
+      };
 
-    setMenuItems(
-      menuItems.map((item) =>
-        item.id === editingItem.id ? updatedItem : item,
-      ),
-    );
-    resetForm();
-    setEditingItem(null);
-  };
+      const updatedItem = await ApiService.updateMenuItem(
+        editingItem.id,
+        updatedData,
+      );
 
-  const handleDeleteItem = (itemId: string) => {
-    if (confirm("Are you sure you want to delete this item?")) {
-      setMenuItems(menuItems.filter((item) => item.id !== itemId));
+      if (updatedItem) {
+        setMenuItems(
+          menuItems.map((item) =>
+            item.id === editingItem.id ? updatedItem : item,
+          ),
+        );
+        resetForm();
+        setEditingItem(null);
+        console.log("✅ Menu item updated:", updatedItem.name);
+      }
+    } catch (error) {
+      console.error("❌ Failed to update menu item:", error);
+      alert("Failed to update menu item. Please try again.");
     }
   };
 
-  const toggleAvailability = (itemId: string) => {
-    setMenuItems(
-      menuItems.map((item) =>
-        item.id === itemId ? { ...item, isAvailable: !item.isAvailable } : item,
-      ),
-    );
+  const handleDeleteItem = async (itemId: string) => {
+    if (confirm("Are you sure you want to delete this item?")) {
+      try {
+        const success = await ApiService.deleteMenuItem(itemId);
+        if (success) {
+          setMenuItems(menuItems.filter((item) => item.id !== itemId));
+          console.log("✅ Menu item deleted");
+        }
+      } catch (error) {
+        console.error("❌ Failed to delete menu item:", error);
+        alert("Failed to delete menu item. Please try again.");
+      }
+    }
+  };
+
+  const toggleAvailability = async (itemId: string) => {
+    const item = menuItems.find((item) => item.id === itemId);
+    if (!item) return;
+
+    try {
+      const updatedItem = await ApiService.updateMenuItem(itemId, {
+        isAvailable: !item.isAvailable,
+      });
+
+      if (updatedItem) {
+        setMenuItems(
+          menuItems.map((item) => (item.id === itemId ? updatedItem : item)),
+        );
+        console.log("✅ Item availability updated");
+      }
+    } catch (error) {
+      console.error("❌ Failed to update availability:", error);
+      alert("Failed to update item availability. Please try again.");
+    }
   };
 
   const startEdit = (item: MenuItem) => {
