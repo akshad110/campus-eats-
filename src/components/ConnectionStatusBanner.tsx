@@ -13,35 +13,12 @@ export const ConnectionStatusBanner = ({
   onDismiss,
 }: ConnectionStatusBannerProps) => {
   const [isDismissed, setIsDismissed] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<
-    "checking" | "connected" | "disconnected"
-  >("checking");
 
-  useEffect(() => {
-    checkConnection();
-    // Check connection status periodically
-    const interval = setInterval(checkConnection, 30000); // Check every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  const checkConnection = async () => {
-    try {
-      const response = await fetch("http://localhost:3001/api/shops");
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          setConnectionStatus("connected");
-        } else if (result.error && result.error.includes("ECONNREFUSED")) {
-          setConnectionStatus("disconnected");
-        } else {
-          setConnectionStatus("disconnected");
-        }
-      } else {
-        setConnectionStatus("disconnected");
-      }
-    } catch (error) {
-      setConnectionStatus("disconnected");
-    }
+  // Simple check: if there are any demo shops or demo auth tokens, we're in demo mode
+  const isDemoMode = () => {
+    const demoShops = localStorage.getItem("demo_shops");
+    const authToken = localStorage.getItem("auth_token");
+    return demoShops || (authToken && authToken.includes("demo_token"));
   };
 
   const handleDismiss = () => {
