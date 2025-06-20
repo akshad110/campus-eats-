@@ -1002,9 +1002,25 @@ class ApiService {
   }
 
   private static async ensureLocalStorageData(): Promise<void> {
-    // Simple localStorage check without initialization
-    console.log("✅ LocalStorage ready");
-    return;
+    try {
+      // Test localStorage functionality
+      const testKey = "campuseats_test";
+      localStorage.setItem(testKey, "test");
+      const testValue = localStorage.getItem(testKey);
+      localStorage.removeItem(testKey);
+
+      if (testValue !== "test") {
+        throw new Error("localStorage is not functioning correctly");
+      }
+
+      console.log("✅ LocalStorage ready and functional");
+      return;
+    } catch (error) {
+      console.error("❌ LocalStorage is not available:", error);
+      throw new Error(
+        "LocalStorage is required for this application to function",
+      );
+    }
   }
 
   private static async createLocalStorageFallbackData(): Promise<void> {
