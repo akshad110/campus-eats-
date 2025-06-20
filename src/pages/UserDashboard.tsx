@@ -11,37 +11,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import ShopService, { Shop } from "@/lib/shopService";
-  {
-    id: "1",
-    name: "Campus Café",
-    description: "Fresh coffee and pastries",
-    image: "/placeholder.svg",
-    category: "Café",
-    rating: 4.5,
-    estimatedWaitTime: 8,
-    isOpen: true,
-  },
-  {
-    id: "2",
-    name: "Pizza Corner",
-    description: "Authentic Italian pizza",
-    image: "/placeholder.svg",
-    category: "Italian",
-    rating: 4.2,
-    estimatedWaitTime: 15,
-    isOpen: true,
-  },
-  {
-    id: "3",
-    name: "Healthy Eats",
-    description: "Fresh salads and smoothies",
-    image: "/placeholder.svg",
-    category: "Healthy",
-    rating: 4.7,
-    estimatedWaitTime: 6,
-    isOpen: false,
-  },
-];
 
 const UserDashboard = () => {
   const { user, logout } = useSimpleAuth();
@@ -145,50 +114,54 @@ const UserDashboard = () => {
         ) : filteredShops.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredShops.map((shop) => (
-            <Card key={shop.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="flex items-center space-x-2">
-                      <span>{shop.name}</span>
-                      {shop.isOpen ? (
-                        <Badge variant="default" className="bg-green-500">
-                          Open
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Closed</Badge>
-                      )}
-                    </CardTitle>
-                    <CardDescription>{shop.description}</CardDescription>
+              <Card key={shop.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="flex items-center space-x-2">
+                        <span>{shop.name}</span>
+                        {shop.isOpen ? (
+                          <Badge variant="default" className="bg-green-500">
+                            Open
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">Closed</Badge>
+                        )}
+                      </CardTitle>
+                      <CardDescription>{shop.description}</CardDescription>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Rating:</span>
-                    <span className="font-medium">⭐ {shop.rating?.toFixed(1) || "4.0"}</span>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Rating:</span>
+                      <span className="font-medium">
+                        ⭐ {shop.rating?.toFixed(1) || "4.0"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Wait time:</span>
+                      <span className="font-medium">
+                        {shop.estimatedWaitTime || 10} min
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Location:</span>
+                      <span className="font-medium">
+                        {shop.location || "Campus"}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Wait time:</span>
-                    <span className="font-medium">
-                      {shop.estimatedWaitTime || 10} min
-                    </span>
+                  <div className="mt-4">
+                    <Link to={`/shop/${shop.id}`}>
+                      <Button className="w-full" disabled={!shop.isActive}>
+                        {shop.isActive ? "View Menu" : "Closed"}
+                      </Button>
+                    </Link>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Location:</span>
-                    <span className="font-medium">{shop.location || "Campus"}</span>
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <Link to={`/shop/${shop.id}`}>
-                    <Button className="w-full" disabled={!shop.isActive}>
-                      {shop.isActive ? "View Menu" : "Closed"}
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             ))}
           </div>
         ) : (
