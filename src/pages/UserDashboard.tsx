@@ -66,8 +66,8 @@ const UserDashboard = () => {
         </div>
       </header>
 
-      {/* Demo Mode Banner */}
-      <DemoModeBanner />
+      {/* Connection Status Banner */}
+      <ConnectionStatusBanner />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
