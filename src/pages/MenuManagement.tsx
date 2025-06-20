@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -46,65 +46,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-
-// Mock menu items data
-const mockMenuItems = [
-  {
-    id: "item_1",
-    name: "Espresso",
-    description: "Rich and bold Italian espresso shot",
-    price: 2.5,
-    category: "Coffee",
-    preparationTime: 2,
-    isAvailable: true,
-    image: "/placeholder.svg",
-  },
-  {
-    id: "item_2",
-    name: "Cappuccino",
-    description: "Espresso with steamed milk and foam art",
-    price: 4.25,
-    category: "Coffee",
-    preparationTime: 3,
-    isAvailable: true,
-    image: "/placeholder.svg",
-  },
-  {
-    id: "item_3",
-    name: "Croissant",
-    description: "Buttery, flaky French pastry",
-    price: 3.75,
-    category: "Pastries",
-    preparationTime: 1,
-    isAvailable: false,
-    image: "/placeholder.svg",
-  },
-  {
-    id: "item_4",
-    name: "Avocado Toast",
-    description: "Multigrain bread with fresh avocado and seasoning",
-    price: 7.95,
-    category: "Food",
-    preparationTime: 5,
-    isAvailable: true,
-    image: "/placeholder.svg",
-  },
-];
-
-interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  preparationTime: number;
-  isAvailable: boolean;
-  image: string;
-}
+import { ApiService } from "@/lib/api";
+import { MenuItem } from "@/lib/types";
 
 const MenuManagement = () => {
   const { user, logout } = useSimpleAuth();
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(mockMenuItems);
+  const [searchParams] = useSearchParams();
+  const shopId = searchParams.get("shopId");
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
