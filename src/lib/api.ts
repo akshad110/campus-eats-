@@ -7,8 +7,8 @@ import {
   DatabaseOrder,
 } from "./database";
 
-// Use localStorage mode since MySQL is not available in this environment
-const FORCE_LOCALSTORAGE_MODE = true;
+// Use MySQL database for production - localStorage only as fallback
+const FORCE_LOCALSTORAGE_MODE = false;
 const API_BASE_URL = "http://localhost:3001/api";
 
 class ApiService {
