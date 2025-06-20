@@ -87,6 +87,10 @@ const CreateShop = () => {
 
     setIsLoading(true);
 
+    // Debug: Verify user authentication
+    console.log("🔍 Creating shop with user:", user);
+    console.log("🔍 User ID:", user?.id);
+
     try {
       const shop = await ShopService.createShop({
         name: formData.name,
