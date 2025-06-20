@@ -183,7 +183,10 @@ class ApiService {
         return true;
       } catch (error) {
         console.error("❌ Failed to delete shop from backend:", error);
-        return false;
+        console.log("🔄 Falling back to localStorage...");
+        // Fallback to localStorage if backend fails
+        await this.ensureLocalStorageData();
+        return await MockDatabase.delete("shops", id);
       }
     }
   }
