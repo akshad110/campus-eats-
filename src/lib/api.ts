@@ -225,7 +225,11 @@ class ApiService {
         return shop;
       } catch (error) {
         console.error("❌ Failed to fetch shop from backend:", error);
-        return null;
+        console.log("🔄 Falling back to localStorage...");
+        // Fallback to localStorage if backend fails
+        await this.ensureLocalStorageData();
+        const dbShop = await MockDatabase.findById<DatabaseShop>("shops", id);
+        return dbShop ? this.convertLocalShopToFrontend(dbShop) : null;
       }
     }
   }
