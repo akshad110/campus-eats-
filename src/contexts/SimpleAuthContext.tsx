@@ -99,8 +99,9 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(demoUser);
         localStorage.setItem("simple_user", JSON.stringify(demoUser));
         localStorage.setItem("auth_token", `demo_token_${Date.now()}`);
-        return;
+        return; // Successfully handled with demo login
       }
+      // Only throw error if it's not a network issue that we can handle
       throw new Error("Login failed. Please check your credentials.");
     }
   };
