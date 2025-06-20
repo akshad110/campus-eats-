@@ -14,6 +14,7 @@ import ShopDetail from "./pages/ShopDetail";
 import Checkout from "./pages/Checkout";
 import OrderTracking from "./pages/OrderTracking";
 import MenuManagement from "./pages/MenuManagement";
+import OrderManagement from "./pages/OrderManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const SimpleApp = () => {
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/order/:orderId" element={<OrderTracking />} />
                 <Route path="/menu-management" element={<MenuManagement />} />
+                <Route path="/order-management" element={<OrderManagement />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

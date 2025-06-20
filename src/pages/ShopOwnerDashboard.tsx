@@ -168,13 +168,15 @@ const ShopOwnerDashboard = () => {
             </Button>
           </Link>
 
-          <Button
-            variant="outline"
-            className="h-16 flex flex-col items-center justify-center"
-          >
-            <span className="text-lg mb-1">📊</span>
-            <span className="text-sm">View Analytics</span>
-          </Button>
+          <Link to="/order-management">
+            <Button
+              variant="outline"
+              className="h-16 flex flex-col items-center justify-center w-full"
+            >
+              <span className="text-lg mb-1">📋</span>
+              <span className="text-sm">Manage Orders</span>
+            </Button>
+          </Link>
 
           <Button
             variant="outline"
