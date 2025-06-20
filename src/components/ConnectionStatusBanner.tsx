@@ -28,19 +28,18 @@ export const ConnectionStatusBanner = ({
   // This avoids making additional fetch calls that cause error spam
 
   return (
-    <Alert className="border-amber-200 bg-amber-50 mx-4 mt-4 relative">
-      <WifiOff className="h-4 w-4 text-amber-600" />
-      <AlertDescription className="text-amber-800 pr-8">
+    <Alert className="border-green-200 bg-green-50 mx-4 mt-4 relative">
+      <Database className="h-4 w-4 text-green-600" />
+      <AlertDescription className="text-green-800 pr-8">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <strong className="block mb-1">Demo Mode Active</strong>
+            <strong className="block mb-1">✅ Demo Mode Active</strong>
             <p className="text-sm mb-2">
-              Database connection unavailable. Using demo data for full
-              functionality. All features work perfectly!
+              Full CampusEats functionality available with demo data. Create
+              shops, manage menus, place orders, and explore all features!
             </p>
             <p className="text-xs opacity-80">
-              The app will automatically connect to the database when it becomes
-              available.
+              All data is stored locally. Perfect for testing and demonstration.
             </p>
           </div>
           <Button
