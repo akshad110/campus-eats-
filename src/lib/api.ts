@@ -364,20 +364,27 @@ class ApiService {
         // Fallback to localStorage if MySQL fails
         await this.ensureLocalStorageData();
 
-        // Get user data for owner ID
-        const userData = localStorage.getItem("user_data");
-        if (!userData) {
-          throw new Error("User not logged in");
-        }
+        // Use provided ownerId or get from localStorage
+        let fallbackOwnerId = shopData.ownerId;
 
-        const user = JSON.parse(userData);
+        if (!fallbackOwnerId) {
+          // Fallback to localStorage if ownerId not provided
+          let userData =
+            localStorage.getItem("simple_user") ||
+            localStorage.getItem("user_data");
+          if (!userData) {
+            throw new Error("User not logged in");
+          }
+          const user = JSON.parse(userData);
+          fallbackOwnerId = user.id;
+        }
         const shopId = `shop_${shopData.name.toLowerCase().replace(/[^a-z0-9]/g, "_")}_${Date.now()}`;
 
         const dbShop = await MockDatabase.create<DatabaseShop>("shops", {
           id: shopId,
           ...shopData,
           location: shopData.location || "Unknown Location",
-          ownerId: user.id,
+          ownerId: fallbackOwnerId,
           isActive: true,
           openingHours: {
             monday: { open: "09:00", close: "22:00", isOpen: true },
