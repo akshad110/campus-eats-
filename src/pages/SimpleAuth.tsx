@@ -36,8 +36,8 @@ const SimpleAuth = () => {
 
     try {
       await login(email, password, role);
-      // Simple navigation without complex logic
-      navigate("/");
+      // Navigate to success page to confirm everything works
+      navigate("/success");
     } catch (error) {
       console.error("Auth error:", error);
     } finally {
