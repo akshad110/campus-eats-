@@ -89,7 +89,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         error instanceof TypeError &&
         error.message.includes("Failed to fetch")
       ) {
-        console.warn("Backend not available, using demo login");
+        console.warn("🔄 Backend not available, switching to demo mode...");
         const demoUser: User = {
           id: `demo_${Date.now()}`,
           email,
@@ -99,6 +99,7 @@ export const SimpleAuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(demoUser);
         localStorage.setItem("simple_user", JSON.stringify(demoUser));
         localStorage.setItem("auth_token", `demo_token_${Date.now()}`);
+        console.log("✅ Demo login successful:", demoUser.name);
         return; // Successfully handled with demo login
       }
       // Only throw error if it's not a network issue that we can handle
