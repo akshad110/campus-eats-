@@ -31,13 +31,8 @@ export const ConnectionStatusBanner = ({
     return null;
   }
 
-  // Only show banner when disconnected (using fallback data)
-  if (connectionStatus === "connected") {
-    return null;
-  }
-
-  // Don't show anything while checking to avoid flicker
-  if (connectionStatus === "checking") {
+  // Only show banner when in demo mode (using fallback data)
+  if (!isDemoMode()) {
     return null;
   }
 
