@@ -10,8 +10,9 @@
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
-    "server": "node server/index.js"
-
+    "server": "node server/index.js",
+    "setup:db": "chmod +x setup-mysql.sh && ./setup-mysql.sh",
+    "setup": "npm install && npm run setup:db"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
