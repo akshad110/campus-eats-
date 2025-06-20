@@ -27,7 +27,7 @@ const SimpleAuth = () => {
   const [role, setRole] = useState("student");
   const [loading, setLoading] = useState(false);
 
-  const { login } = useSimpleAuth();
+  const { login, register } = useSimpleAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,7 +35,16 @@ const SimpleAuth = () => {
     setLoading(true);
 
     try {
-      await login(email, password, role);
+      if (isLogin) {
+        await login(email, password, role);
+      } else {
+        if (!name.trim()) {
+          alert("Please enter your name");
+          return;
+        }
+        await register(email, password, name, role);
+      }
+
       // Navigate to appropriate dashboard based on role
       if (role === "shopkeeper") {
         navigate("/shop-dashboard");
