@@ -46,7 +46,7 @@ export const ConnectionStatusBanner = ({
             variant="ghost"
             size="sm"
             onClick={handleDismiss}
-            className="absolute top-2 right-2 h-6 w-6 p-0 text-amber-600 hover:text-amber-700"
+            className="absolute top-2 right-2 h-6 w-6 p-0 text-green-600 hover:text-green-700"
           >
             <X className="h-3 w-3" />
           </Button>
