@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SimpleAuthProvider } from "./contexts/SimpleAuthContext";
 import SimpleLanding from "./pages/SimpleLanding";
-import Auth from "./pages/Auth";
+import SimpleAuth from "./pages/SimpleAuth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,7 +21,7 @@ const SimpleApp = () => {
               <Sonner />
               <Routes>
                 <Route path="/" element={<SimpleLanding />} />
-                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth" element={<SimpleAuth />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
