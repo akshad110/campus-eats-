@@ -87,6 +87,10 @@ const CreateShop = () => {
 
     setIsLoading(true);
 
+    // Debug: Verify user authentication
+    console.log("🔍 Creating shop with user:", user);
+    console.log("🔍 User ID:", user?.id);
+
     try {
       const shop = await ShopService.createShop({
         name: formData.name,
@@ -99,7 +103,9 @@ const CreateShop = () => {
       });
 
       console.log("Shop created successfully:", shop);
-      alert("Shop created successfully!");
+      alert(
+        `Shop "${shop.name}" created successfully! You can now manage your menu and start receiving orders.`,
+      );
       navigate("/shop-dashboard");
     } catch (error) {
       console.error("Error creating shop:", error);

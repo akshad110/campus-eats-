@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import ShopService, { Shop } from "@/lib/shopService";
+import ShopService from "@/lib/shopService";
+import { Shop } from "@/lib/types";
 
 // Mock data for shop owner
 const mockShopData = {
@@ -66,28 +67,32 @@ const ShopOwnerDashboard = () => {
     navigate("/auth");
   };
 
+  const fetchShops = async () => {
+    if (!user?.id) return;
+
+    try {
+      setIsLoading(true);
+      const userShops = await ShopService.getShopsByOwner(user.id);
+      setShops(userShops);
+      console.log("✅ Loaded shops for owner:", userShops.length);
+    } catch (error) {
+      console.error("Error fetching shops by owner:", error);
+      setShops([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchShops = async () => {
-      if (!user?.id) return;
-
-      try {
-        setIsLoading(true);
-        const userShops = await ShopService.getShopsByOwner(user.id);
-        setShops(userShops);
-      } catch (error) {
-        console.error("Error fetching shops by owner:", error);
-        // Set empty array as fallback to prevent further errors
-        setShops([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Only fetch if we haven't already done so
-    if (user?.id && shops.length === 0 && !isLoading) {
+    if (user?.id) {
       fetchShops();
     }
-  }, [user]);
+  }, [user?.id]);
+
+  // Function to refresh shops data
+  const refreshShops = () => {
+    fetchShops();
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -125,6 +130,9 @@ const ShopOwnerDashboard = () => {
               <span className="text-sm text-gray-600">
                 Welcome, {user?.name}!
               </span>
+              <Button variant="outline" size="sm" onClick={refreshShops}>
+                Refresh
+              </Button>
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 Logout
               </Button>
@@ -172,6 +180,26 @@ const ShopOwnerDashboard = () => {
           )}
         </div>
 
+        {/* Shop Management Actions */}
+        {shops.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Manage Your Shop</h3>
+              <div className="flex space-x-3">
+                <Link to={`/menu-management?shopId=${shops[0].id}`}>
+                  <Button variant="outline">Manage Menu</Button>
+                </Link>
+                <Link to={`/order-management?shopId=${shops[0].id}`}>
+                  <Button variant="outline">Manage Orders</Button>
+                </Link>
+                <Link to="/create-shop">
+                  <Button>Create Another Shop</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats Overview */}
         {shops.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -192,7 +220,7 @@ const ShopOwnerDashboard = () => {
             <Card>
               <CardContent className="p-6">
                 <div className="text-2xl font-bold text-yellow-600">
-                  ⭐ {shops[0].rating?.toFixed(1) || "4.0"}
+                  ⭐ {shops[0]?.rating?.toFixed(1) || "4.0"}
                 </div>
                 <p className="text-sm text-gray-600">Average Rating</p>
               </CardContent>

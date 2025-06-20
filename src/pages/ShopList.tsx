@@ -10,7 +10,7 @@ const ShopList = () => {
   const navigate = useNavigate();
 
   const handleViewMenu = (shopId: string) => {
-    navigate(`/shop/${shopId}/menu`);
+    navigate(`/shop/${shopId}`);
   };
 
   return (

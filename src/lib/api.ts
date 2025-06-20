@@ -7,8 +7,8 @@ import {
   DatabaseOrder,
 } from "./database";
 
-// Use MySQL database for production - localStorage disabled
-const FORCE_LOCALSTORAGE_MODE = false;
+// Use localStorage for development - more reliable than backend dependency
+const FORCE_LOCALSTORAGE_MODE = true;
 const API_BASE_URL = "http://localhost:3001/api";
 
 class ApiService {
@@ -241,25 +241,33 @@ class ApiService {
     location: string;
     phone?: string;
     image?: string;
+    ownerId?: string;
   }): Promise<Shop> {
     if (FORCE_LOCALSTORAGE_MODE) {
       console.log("🏗️ Creating shop in localStorage");
       await this.ensureLocalStorageData();
 
-      // Get user data for owner ID
-      const userData = localStorage.getItem("user_data");
-      if (!userData) {
-        throw new Error("User not logged in");
-      }
+      // Use provided ownerId or get from localStorage
+      let ownerId = shopData.ownerId;
 
-      const user = JSON.parse(userData);
+      if (!ownerId) {
+        // Fallback to localStorage if ownerId not provided
+        let userData =
+          localStorage.getItem("simple_user") ||
+          localStorage.getItem("user_data");
+        if (!userData) {
+          throw new Error("User not logged in");
+        }
+        const user = JSON.parse(userData);
+        ownerId = user.id;
+      }
       const shopId = `shop_${shopData.name.toLowerCase().replace(/[^a-z0-9]/g, "_")}_${Date.now()}`;
 
       const dbShop = await MockDatabase.create<DatabaseShop>("shops", {
         id: shopId,
         ...shopData,
         location: shopData.location || "Unknown Location",
-        ownerId: user.id,
+        ownerId: ownerId,
         isActive: true,
         openingHours: {
           monday: { open: "09:00", close: "22:00", isOpen: true },
@@ -286,13 +294,20 @@ class ApiService {
     } else {
       console.log("🏗️ Creating shop in MySQL database");
 
-      // Get user data for owner ID
-      const userData = localStorage.getItem("user_data");
-      if (!userData) {
-        throw new Error("User not logged in");
-      }
+      // Use provided ownerId or get from localStorage
+      let ownerId = shopData.ownerId;
 
-      const user = JSON.parse(userData);
+      if (!ownerId) {
+        // Fallback to localStorage if ownerId not provided
+        let userData =
+          localStorage.getItem("simple_user") ||
+          localStorage.getItem("user_data");
+        if (!userData) {
+          throw new Error("User not logged in");
+        }
+        const user = JSON.parse(userData);
+        ownerId = user.id;
+      }
 
       try {
         const response = await fetch(`${API_BASE_URL}/shops`, {
@@ -307,7 +322,7 @@ class ApiService {
             location: shopData.location || "Unknown Location",
             phone: shopData.phone || "",
             image: shopData.image || "/placeholder.svg",
-            ownerId: user.id,
+            ownerId: ownerId,
           }),
         });
 
@@ -349,20 +364,27 @@ class ApiService {
         // Fallback to localStorage if MySQL fails
         await this.ensureLocalStorageData();
 
-        // Get user data for owner ID
-        const userData = localStorage.getItem("user_data");
-        if (!userData) {
-          throw new Error("User not logged in");
-        }
+        // Use provided ownerId or get from localStorage
+        let fallbackOwnerId = shopData.ownerId;
 
-        const user = JSON.parse(userData);
+        if (!fallbackOwnerId) {
+          // Fallback to localStorage if ownerId not provided
+          let userData =
+            localStorage.getItem("simple_user") ||
+            localStorage.getItem("user_data");
+          if (!userData) {
+            throw new Error("User not logged in");
+          }
+          const user = JSON.parse(userData);
+          fallbackOwnerId = user.id;
+        }
         const shopId = `shop_${shopData.name.toLowerCase().replace(/[^a-z0-9]/g, "_")}_${Date.now()}`;
 
         const dbShop = await MockDatabase.create<DatabaseShop>("shops", {
           id: shopId,
           ...shopData,
           location: shopData.location || "Unknown Location",
-          ownerId: user.id,
+          ownerId: fallbackOwnerId,
           isActive: true,
           openingHours: {
             monday: { open: "09:00", close: "22:00", isOpen: true },
@@ -414,6 +436,18 @@ class ApiService {
         ownerId,
         isActive: true,
       });
+
+      // Debug: Show all shops and filter results
+      const allShops = await MockDatabase.findMany<DatabaseShop>("shops");
+      console.log(`📊 Total shops in database: ${allShops.length}`);
+      console.log(`🔍 Shops for owner ${ownerId}: ${dbShops.length}`);
+
+      if (dbShops.length === 0 && allShops.length > 0) {
+        console.log(
+          "ℹ️ User has no shops yet. They need to create their first shop.",
+        );
+      }
+
       const shops = dbShops.map(this.convertLocalShopToFrontend);
       console.log(`✅ Found ${shops.length} shops for owner`);
       return shops;
@@ -700,7 +734,9 @@ class ApiService {
     notes?: string;
   }): Promise<Order> {
     await this.ensureLocalStorageData();
-    const userData = localStorage.getItem("user_data");
+    // Get user data for order creation - try both possible keys
+    const userData =
+      localStorage.getItem("simple_user") || localStorage.getItem("user_data");
     if (!userData) {
       throw new Error("User not logged in");
     }
@@ -1002,9 +1038,25 @@ class ApiService {
   }
 
   private static async ensureLocalStorageData(): Promise<void> {
-    // Simple localStorage check without initialization
-    console.log("✅ LocalStorage ready");
-    return;
+    try {
+      // Test localStorage functionality
+      const testKey = "campuseats_test";
+      localStorage.setItem(testKey, "test");
+      const testValue = localStorage.getItem(testKey);
+      localStorage.removeItem(testKey);
+
+      if (testValue !== "test") {
+        throw new Error("localStorage is not functioning correctly");
+      }
+
+      console.log("✅ LocalStorage ready and functional");
+      return;
+    } catch (error) {
+      console.error("❌ LocalStorage is not available:", error);
+      throw new Error(
+        "LocalStorage is required for this application to function",
+      );
+    }
   }
 
   private static async createLocalStorageFallbackData(): Promise<void> {
