@@ -8,7 +8,7 @@ import {
 } from "./database";
 
 // Use localStorage mode since MySQL is not available in this environment
-const FORCE_LOCALSTORAGE_MODE = false;
+const FORCE_LOCALSTORAGE_MODE = true;
 const API_BASE_URL = "http://localhost:3001/api";
 
 class ApiService {
@@ -428,7 +428,10 @@ class ApiService {
         console.log(`✅ Found ${shops.length} shops for owner`);
         return shops;
       } catch (error) {
-        console.error("❌ Failed to fetch shops for owner from backend:", error);
+        console.error(
+          "❌ Failed to fetch shops for owner from backend:",
+          error,
+        );
         return [];
       }
     }
@@ -446,7 +449,9 @@ class ApiService {
         "menu_items",
         { shopId },
       );
-      const convertedItems = dbMenuItems.map(this.convertLocalMenuItemToFrontend);
+      const convertedItems = dbMenuItems.map(
+        this.convertLocalMenuItemToFrontend,
+      );
       console.log(
         `✅ Loaded ${convertedItems.length} menu items from localStorage`,
       );
@@ -454,7 +459,9 @@ class ApiService {
     } else {
       console.log("🍽️ Loading menu items for shop from backend API:", shopId);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/shops/${shopId}/menu`);
+        const response = await fetch(
+          `${API_BASE_URL}/api/shops/${shopId}/menu`,
+        );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -475,7 +482,9 @@ class ApiService {
           preparationTime: dbItem.preparation_time,
           createdAt: dbItem.created_at,
         }));
-        console.log(`✅ Loaded ${menuItems.length} menu items from backend API`);
+        console.log(
+          `✅ Loaded ${menuItems.length} menu items from backend API`,
+        );
         return menuItems;
       } catch (error) {
         console.error("❌ Failed to fetch menu items from backend:", error);
@@ -485,7 +494,9 @@ class ApiService {
           "menu_items",
           { shopId },
         );
-        const convertedItems = dbMenuItems.map(this.convertLocalMenuItemToFrontend);
+        const convertedItems = dbMenuItems.map(
+          this.convertLocalMenuItemToFrontend,
+        );
         console.log(
           `✅ Loaded ${convertedItems.length} menu items from localStorage fallback`,
         );
@@ -595,53 +606,61 @@ class ApiService {
     }
   }
 
-static async updateMenuItem(id: string, data: Partial<MenuItem>): Promise<MenuItem | null> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+  static async updateMenuItem(
+    id: string,
+    data: Partial<MenuItem>,
+  ): Promise<MenuItem | null> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-    if (!response.ok) {
-      throw new Error("Failed to update menu item");
+      if (!response.ok) {
+        throw new Error("Failed to update menu item");
+      }
+
+      const result = await response.json();
+      return {
+        id: result.data.id,
+        shopId: result.data.shop_id,
+        name: result.data.name,
+        description: result.data.description,
+        price: result.data.price,
+        image: result.data.image,
+        category: result.data.category,
+        isAvailable: result.data.is_available,
+        preparationTime: result.data.preparation_time,
+        createdAt: result.data.created_at,
+      };
+    } catch (error) {
+      console.error("❌ Backend update failed, fallback to localStorage");
+      await this.ensureLocalStorageData();
+      const dbMenuItem = await MockDatabase.update<DatabaseMenuItem>(
+        "menu_items",
+        id,
+        data,
+      );
+      return dbMenuItem
+        ? this.convertLocalMenuItemToFrontend(dbMenuItem)
+        : null;
     }
-
-    const result = await response.json();
-    return {
-      id: result.data.id,
-      shopId: result.data.shop_id,
-      name: result.data.name,
-      description: result.data.description,
-      price: result.data.price,
-      image: result.data.image,
-      category: result.data.category,
-      isAvailable: result.data.is_available,
-      preparationTime: result.data.preparation_time,
-      createdAt: result.data.created_at,
-    };
-  } catch (error) {
-    console.error("❌ Backend update failed, fallback to localStorage");
-    await this.ensureLocalStorageData();
-    const dbMenuItem = await MockDatabase.update<DatabaseMenuItem>("menu_items", id, data);
-    return dbMenuItem ? this.convertLocalMenuItemToFrontend(dbMenuItem) : null;
   }
-}
 
-static async deleteMenuItem(id: string): Promise<boolean> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) throw new Error("Delete failed");
-    return true;
-  } catch (error) {
-    console.error("❌ Delete failed on backend, fallback to localStorage");
-    await this.ensureLocalStorageData();
-    return await MockDatabase.delete("menu_items", id);
+  static async deleteMenuItem(id: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Delete failed");
+      return true;
+    } catch (error) {
+      console.error("❌ Delete failed on backend, fallback to localStorage");
+      await this.ensureLocalStorageData();
+      return await MockDatabase.delete("menu_items", id);
+    }
   }
-}
-
 
   // ==============================================================================
   // ORDER API
