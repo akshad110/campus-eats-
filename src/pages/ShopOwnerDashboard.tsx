@@ -210,7 +210,7 @@ const ShopOwnerDashboard = () => {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           <Link to="/create-shop">
             <Button
               variant="default"
