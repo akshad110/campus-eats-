@@ -29,6 +29,7 @@ const CreateShop = () => {
 
   // Redirect if user is not logged in
   useEffect(() => {
+    console.log("CreateShop: Current user:", user);
     if (!user) {
       console.log("User not authenticated, redirecting to login");
       navigate("/auth");
