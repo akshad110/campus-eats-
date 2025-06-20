@@ -809,7 +809,7 @@ class ApiService {
     shopId: string,
     category: string,
   ): Promise<void> {
-    console.log(`��️ Creating starter menu items for ${shopId} (${category})`);
+    console.log(`🍽️ Creating starter menu items for ${shopId} (${category})`);
 
     // Define starter menu items based on shop category
     const starterMenus: Record<string, any[]> = {
@@ -1003,8 +1003,18 @@ class ApiService {
   }
 
   private static async ensureLocalStorageData(): Promise<void> {
-    // Do not create any fallback data - let the app start with empty shops
-    console.log("✅ LocalStorage initialized without fallback data");
+    // Initialize with sample data for development
+    try {
+      const existingShops = await MockDatabase.findMany("shops", {});
+      if (existingShops.length === 0) {
+        console.log("🔄 Initializing localStorage with sample data...");
+        await this.createLocalStorageFallbackData();
+      } else {
+        console.log("✅ LocalStorage data already exists");
+      }
+    } catch (error) {
+      console.error("❌ Error checking localStorage data:", error);
+    }
     return;
   }
 
