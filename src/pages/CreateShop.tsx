@@ -64,6 +64,7 @@ const CreateShop = () => {
         location: formData.location,
         phone: formData.phone,
         image: formData.image,
+        ownerId: user?.id,
       });
 
       console.log("Shop created successfully:", shop);
