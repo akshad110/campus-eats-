@@ -1,0 +1,260 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+
+// Mock data for shop owner
+const mockShopData = {
+  shop: {
+    id: "1",
+    name: "My Campus Café",
+    description: "Fresh coffee and pastries",
+    isActive: true,
+    todayOrders: 23,
+    totalRevenue: 425.5,
+    avgRating: 4.5,
+  },
+  recentOrders: [
+    {
+      id: "1",
+      customerName: "John Doe",
+      items: ["Cappuccino", "Croissant"],
+      total: 8.25,
+      status: "preparing",
+      tokenNumber: 15,
+      timeOrdered: "10:30 AM",
+    },
+    {
+      id: "2",
+      customerName: "Jane Smith",
+      items: ["Latte", "Muffin"],
+      total: 9.5,
+      status: "ready",
+      tokenNumber: 14,
+      timeOrdered: "10:25 AM",
+    },
+    {
+      id: "3",
+      customerName: "Mike Johnson",
+      items: ["Espresso"],
+      total: 3.5,
+      status: "completed",
+      tokenNumber: 13,
+      timeOrdered: "10:15 AM",
+    },
+  ],
+};
+
+const ShopOwnerDashboard = () => {
+  const { user, logout } = useSimpleAuth();
+  const [selectedStatus, setSelectedStatus] = useState("all");
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "preparing":
+        return "bg-yellow-500";
+      case "ready":
+        return "bg-green-500";
+      case "completed":
+        return "bg-blue-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  const filteredOrders =
+    selectedStatus === "all"
+      ? mockShopData.recentOrders
+      : mockShopData.recentOrders.filter(
+          (order) => order.status === selectedStatus,
+        );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold">🏪</span>
+              </div>
+              <h1 className="text-xl font-bold">Shop Owner Portal</h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">
+                Welcome, {user?.name}!
+              </span>
+              <Button variant="outline" size="sm" onClick={logout}>
+                Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {/* Shop Status */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                {mockShopData.shop.name}
+              </h2>
+              <p className="text-gray-600">{mockShopData.shop.description}</p>
+            </div>
+            <Badge
+              className={
+                mockShopData.shop.isActive ? "bg-green-500" : "bg-red-500"
+              }
+            >
+              {mockShopData.shop.isActive ? "Open" : "Closed"}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-2xl font-bold text-blue-600">
+                {mockShopData.shop.todayOrders}
+              </div>
+              <p className="text-sm text-gray-600">Orders Today</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-2xl font-bold text-green-600">
+                ${mockShopData.shop.totalRevenue}
+              </div>
+              <p className="text-sm text-gray-600">Today's Revenue</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-2xl font-bold text-yellow-600">
+                ⭐ {mockShopData.shop.avgRating}
+              </div>
+              <p className="text-sm text-gray-600">Average Rating</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-2xl font-bold text-purple-600">3</div>
+              <p className="text-sm text-gray-600">Pending Orders</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Button className="h-16 flex flex-col items-center justify-center">
+            <span className="text-lg mb-1">🍽️</span>
+            <span className="text-sm">Manage Menu</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            className="h-16 flex flex-col items-center justify-center"
+          >
+            <span className="text-lg mb-1">📊</span>
+            <span className="text-sm">View Analytics</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            className="h-16 flex flex-col items-center justify-center"
+          >
+            <span className="text-lg mb-1">⚙️</span>
+            <span className="text-sm">Shop Settings</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            className="h-16 flex flex-col items-center justify-center"
+          >
+            <span className="text-lg mb-1">💬</span>
+            <span className="text-sm">Customer Reviews</span>
+          </Button>
+        </div>
+
+        {/* Recent Orders */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold">Recent Orders</h3>
+            <div className="flex space-x-2">
+              {["all", "preparing", "ready", "completed"].map((status) => (
+                <Button
+                  key={status}
+                  variant={selectedStatus === status ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedStatus(status)}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {filteredOrders.map((order) => (
+              <Card key={order.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-lg">
+                          #{order.tokenNumber}
+                        </span>
+                        <Badge className={getStatusColor(order.status)}>
+                          {order.status}
+                        </Badge>
+                      </div>
+                      <div>
+                        <p className="font-medium">{order.customerName}</p>
+                        <p className="text-sm text-gray-600">
+                          {order.items.join(", ")} • ${order.total}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {order.timeOrdered}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      {order.status === "preparing" && (
+                        <Button size="sm">Mark Ready</Button>
+                      )}
+                      {order.status === "ready" && (
+                        <Button size="sm" variant="outline">
+                          Mark Completed
+                        </Button>
+                      )}
+                      <Button size="sm" variant="outline">
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default ShopOwnerDashboard;
