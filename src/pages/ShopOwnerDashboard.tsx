@@ -211,6 +211,16 @@ const ShopOwnerDashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Link to="/create-shop">
+            <Button
+              variant="default"
+              className="h-16 flex flex-col items-center justify-center w-full bg-green-600 hover:bg-green-700"
+            >
+              <span className="text-lg mb-1">🏪</span>
+              <span className="text-sm">Create Shop</span>
+            </Button>
+          </Link>
+
           <Link to="/menu-management">
             <Button className="h-16 flex flex-col items-center justify-center w-full">
               <span className="text-lg mb-1">🍽️</span>
