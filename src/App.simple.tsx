@@ -16,15 +16,13 @@ const SimpleApp = () => {
       <TooltipProvider>
         <SimpleAuthProvider>
           <BrowserRouter>
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
-              <Toaster />
-              <Sonner />
-              <Routes>
-                <Route path="/" element={<SimpleLanding />} />
-                <Route path="/auth" element={<SimpleAuth />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </div>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/" element={<SimpleLanding />} />
+              <Route path="/auth" element={<SimpleAuth />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </BrowserRouter>
         </SimpleAuthProvider>
       </TooltipProvider>
