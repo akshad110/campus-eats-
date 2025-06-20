@@ -10,6 +10,7 @@ import SimpleAuth from "./pages/SimpleAuth";
 import SimpleSuccess from "./pages/SimpleSuccess";
 import UserDashboard from "./pages/UserDashboard";
 import ShopOwnerDashboard from "./pages/ShopOwnerDashboard";
+import CreateShop from "./pages/CreateShop";
 import ShopDetail from "./pages/ShopDetail";
 import Checkout from "./pages/Checkout";
 import OrderTracking from "./pages/OrderTracking";
@@ -37,6 +38,7 @@ const SimpleApp = () => {
                   path="/shop-dashboard"
                   element={<ShopOwnerDashboard />}
                 />
+                <Route path="/create-shop" element={<CreateShop />} />
                 <Route path="/shop/:shopId" element={<ShopDetail />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/order/:orderId" element={<OrderTracking />} />
