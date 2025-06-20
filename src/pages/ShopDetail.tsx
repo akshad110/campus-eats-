@@ -15,52 +15,83 @@ import { useCart } from "@/contexts/CartContext";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import MenuItemCard from "@/components/MenuItemCard";
 import ShoppingCartSidebar from "@/components/ShoppingCartSidebar";
+import { ApiService } from "@/lib/api";
+import { Shop, MenuItem } from "@/lib/types";
 
-// Mock shop data
-const mockShops = {
-  "1": {
-    id: "1",
-    name: "Campus Café",
-    description: "Fresh coffee and pastries for busy students",
-    image: "/placeholder.svg",
-    category: "Café",
-    rating: 4.5,
-    totalRatings: 128,
-    estimatedWaitTime: 8,
-    isOpen: true,
-    phone: "+1 (555) 123-4567",
-    location: "Building A, Ground Floor",
-    openingHours: "Mon-Fri: 7AM-8PM, Sat-Sun: 8AM-6PM",
-  },
-  "2": {
-    id: "2",
-    name: "Pizza Corner",
-    description: "Authentic Italian pizza made fresh daily",
-    image: "/placeholder.svg",
-    category: "Italian",
-    rating: 4.2,
-    totalRatings: 89,
-    estimatedWaitTime: 15,
-    isOpen: true,
-    phone: "+1 (555) 234-5678",
-    location: "Food Court, Level 2",
-    openingHours: "Daily: 11AM-10PM",
-  },
-  "3": {
-    id: "3",
-    name: "Healthy Eats",
-    description: "Fresh salads, smoothies, and healthy options",
-    image: "/placeholder.svg",
-    category: "Healthy",
-    rating: 4.7,
-    totalRatings: 203,
-    estimatedWaitTime: 6,
-    isOpen: false,
-    phone: "+1 (555) 345-6789",
-    location: "Student Center, Main Floor",
-    openingHours: "Mon-Sat: 8AM-7PM, Sun: Closed",
-  },
-};
+const ShopDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  const { cartItems, addToCart, removeFromCart, updateQuantity, cartTotal } =
+    useCart();
+  const { user } = useSimpleAuth();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  // Real data state
+  const [shop, setShop] = useState<Shop | null>(null);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load shop and menu data
+  useEffect(() => {
+    const loadShopData = async () => {
+      if (!id) return;
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Load shop details and menu items in parallel
+        const [shopData, menuData] = await Promise.all([
+          ApiService.getShopById(id),
+          ApiService.getMenuItems(id)
+        ]);
+
+        if (!shopData) {
+          setError("Shop not found");
+          return;
+        }
+
+        setShop(shopData);
+        setMenuItems(menuData);
+        console.log("✅ Loaded shop and menu data:", shopData.name, menuData.length);
+      } catch (error) {
+        console.error("❌ Failed to load shop data:", error);
+        setError("Failed to load shop data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadShopData();
+  }, [id]);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p>Loading shop details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error || !shop) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Shop Not Found</h2>
+          <p className="text-gray-600 mb-6">{error || "The shop you're looking for doesn't exist."}</p>
+          <Link to="/">
+            <Button>Return to Home</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
 // Mock menu data
 const mockMenus = {
