@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { X, Database, Wifi, WifiOff } from "lucide-react";
+import { X, Database } from "lucide-react";
 
 interface ConnectionStatusBannerProps {
   isVisible?: boolean;
