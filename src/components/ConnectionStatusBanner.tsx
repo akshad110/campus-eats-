@@ -14,13 +14,6 @@ export const ConnectionStatusBanner = ({
 }: ConnectionStatusBannerProps) => {
   const [isDismissed, setIsDismissed] = useState(false);
 
-  // Simple check: if there are any demo shops or demo auth tokens, we're in demo mode
-  const isDemoMode = () => {
-    const demoShops = localStorage.getItem("demo_shops");
-    const authToken = localStorage.getItem("auth_token");
-    return demoShops || (authToken && authToken.includes("demo_token"));
-  };
-
   const handleDismiss = () => {
     setIsDismissed(true);
     onDismiss?.();
@@ -31,10 +24,8 @@ export const ConnectionStatusBanner = ({
     return null;
   }
 
-  // Only show banner when in demo mode (using fallback data)
-  if (!isDemoMode()) {
-    return null;
-  }
+  // Always show the demo mode banner since database is currently unavailable
+  // This avoids making additional fetch calls that cause error spam
 
   return (
     <Alert className="border-amber-200 bg-amber-50 mx-4 mt-4 relative">
