@@ -62,20 +62,25 @@ const ShopOwnerDashboard = () => {
 
   useEffect(() => {
     const fetchShops = async () => {
-      if (!user) return;
+      if (!user?.id) return;
 
       try {
         setIsLoading(true);
         const userShops = await ShopService.getShopsByOwner(user.id);
         setShops(userShops);
       } catch (error) {
-        console.error("Error fetching shops:", error);
+        console.error("Error fetching shops by owner:", error);
+        // Set empty array as fallback to prevent further errors
+        setShops([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchShops();
+    // Only fetch if we haven't already done so
+    if (user?.id && shops.length === 0 && !isLoading) {
+      fetchShops();
+    }
   }, [user]);
 
   const getStatusColor = (status: string) => {
