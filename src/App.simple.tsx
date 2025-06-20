@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SimpleAuthProvider } from "./contexts/SimpleAuthContext";
-import Landing from "./pages/Landing";
+import SimpleLanding from "./pages/SimpleLanding";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -20,7 +20,7 @@ const SimpleApp = () => {
               <Toaster />
               <Sonner />
               <Routes>
-                <Route path="/" element={<Landing />} />
+                <Route path="/" element={<SimpleLanding />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
