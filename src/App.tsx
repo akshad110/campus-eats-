@@ -57,10 +57,7 @@ const AppContent = () => {
 
     window.addEventListener("unhandledrejection", handleUnhandledRejection);
 
-    // Initialize app data
-    ApiService.initializeMockData(true).catch(() => {
-      // Silently handle initialization errors
-    });
+    // Initialization removed to prevent infinite loops
 
     // Make debug functions available globally
     (window as any).debugApp = {
