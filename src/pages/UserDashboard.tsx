@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,9 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-
-// Mock shop data
-const mockShops = [
+import ShopService, { Shop } from "@/lib/shopService";
   {
     id: "1",
     name: "Campus Café",
@@ -48,13 +46,31 @@ const mockShops = [
 const UserDashboard = () => {
   const { user, logout } = useSimpleAuth();
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const categories = ["All", "Café", "Italian", "Healthy", "Fast Food"];
+  useEffect(() => {
+    const fetchShops = async () => {
+      try {
+        setIsLoading(true);
+        const allShops = await ShopService.getShops();
+        setShops(allShops);
+      } catch (error) {
+        console.error("Error fetching shops:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchShops();
+  }, []);
+
+  const categories = ["All", ...new Set(shops.map((shop) => shop.category))];
 
   const filteredShops =
     selectedCategory === "All"
-      ? mockShops
-      : mockShops.filter((shop) => shop.category === selectedCategory);
+      ? shops
+      : shops.filter((shop) => shop.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -109,8 +125,26 @@ const UserDashboard = () => {
         </div>
 
         {/* Shops Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredShops.map((shop) => (
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-gray-200 rounded"></div>
+                    <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filteredShops.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredShops.map((shop) => (
             <Card key={shop.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -133,30 +167,51 @@ const UserDashboard = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Rating:</span>
-                    <span className="font-medium">⭐ {shop.rating}</span>
+                    <span className="font-medium">⭐ {shop.rating?.toFixed(1) || "4.0"}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Wait time:</span>
                     <span className="font-medium">
-                      {shop.estimatedWaitTime} min
+                      {shop.estimatedWaitTime || 10} min
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Category:</span>
-                    <span className="font-medium">{shop.category}</span>
+                    <span className="text-gray-600">Location:</span>
+                    <span className="font-medium">{shop.location || "Campus"}</span>
                   </div>
                 </div>
                 <div className="mt-4">
                   <Link to={`/shop/${shop.id}`}>
-                    <Button className="w-full" disabled={!shop.isOpen}>
-                      {shop.isOpen ? "View Menu" : "Closed"}
+                    <Button className="w-full" disabled={!shop.isActive}>
+                      {shop.isActive ? "View Menu" : "Closed"}
                     </Button>
                   </Link>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">🏪</span>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              No shops found
+            </h3>
+            <p className="text-gray-500 mb-6">
+              {selectedCategory === "All"
+                ? "No restaurants are available yet. Check back later!"
+                : `No ${selectedCategory} restaurants found. Try a different category.`}
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedCategory("All")}
+            >
+              View All Categories
+            </Button>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="mt-12">
