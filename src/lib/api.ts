@@ -7,8 +7,8 @@ import {
   DatabaseOrder,
 } from "./database";
 
-// Use MySQL database for production - localStorage disabled
-const FORCE_LOCALSTORAGE_MODE = false;
+// Use localStorage for development - more reliable than backend dependency
+const FORCE_LOCALSTORAGE_MODE = true;
 const API_BASE_URL = "http://localhost:3001/api";
 
 class ApiService {
