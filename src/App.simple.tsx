@@ -7,6 +7,8 @@ import { SimpleAuthProvider } from "./contexts/SimpleAuthContext";
 import SimpleLanding from "./pages/SimpleLanding";
 import SimpleAuth from "./pages/SimpleAuth";
 import SimpleSuccess from "./pages/SimpleSuccess";
+import UserDashboard from "./pages/UserDashboard";
+import ShopOwnerDashboard from "./pages/ShopOwnerDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +25,8 @@ const SimpleApp = () => {
               <Route path="/" element={<SimpleLanding />} />
               <Route path="/auth" element={<SimpleAuth />} />
               <Route path="/success" element={<SimpleSuccess />} />
+              <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/shop-dashboard" element={<ShopOwnerDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

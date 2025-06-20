@@ -36,8 +36,12 @@ const SimpleAuth = () => {
 
     try {
       await login(email, password, role);
-      // Navigate to success page to confirm everything works
-      navigate("/success");
+      // Navigate to appropriate dashboard based on role
+      if (role === "shopkeeper") {
+        navigate("/shop-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error("Auth error:", error);
     } finally {
