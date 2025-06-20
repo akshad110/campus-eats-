@@ -125,7 +125,7 @@ const ShopOwnerDashboard = () => {
               <span className="text-sm text-gray-600">
                 Welcome, {user?.name}!
               </span>
-              <Button variant="outline" size="sm" onClick={logout}>
+              <Button variant="outline" size="sm" onClick={handleLogout}>
                 Logout
               </Button>
             </div>
