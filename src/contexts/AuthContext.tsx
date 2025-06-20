@@ -45,15 +45,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string, role: string) => {
     try {
-      const result = await ApiService.login(
-        email,
-        password,
-        role as User["role"],
-      );
-      storeSession(result.user, result.token);
-      return result.user;
+      // Try backend API first
+      const res = await fetch("http://localhost:3001/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          storeSession(data.data.user, data.data.token);
+          return data.data.user;
+        }
+        throw new Error(data.error || "Login failed");
+      }
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : "Login failed");
+      console.warn("Backend login failed, trying ApiService fallback:", error);
+      // Fallback to ApiService (localStorage)
+      try {
+        const result = await ApiService.login(
+          email,
+          password,
+          role as User["role"],
+        );
+        storeSession(result.user, result.token);
+        return result.user;
+      } catch (fallbackError) {
+        throw new Error("Login failed on both backend and localStorage");
+      }
     }
   };
 
@@ -64,18 +85,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     role: string,
   ) => {
     try {
-      const result = await ApiService.register(
-        email,
-        password,
-        name,
-        role as User["role"],
-      );
-      storeSession(result.user, result.token);
-      return result.user;
+      // Try backend API first
+      const res = await fetch("http://localhost:3001/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name, role }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          storeSession(data.data.user, data.data.token);
+          return data.data.user;
+        }
+        throw new Error(data.error || "Registration failed");
+      }
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     } catch (error) {
-      throw new Error(
-        error instanceof Error ? error.message : "Registration failed",
+      console.warn(
+        "Backend registration failed, trying ApiService fallback:",
+        error,
       );
+      // Fallback to ApiService (localStorage)
+      try {
+        const result = await ApiService.register(
+          email,
+          password,
+          name,
+          role as User["role"],
+        );
+        storeSession(result.user, result.token);
+        return result.user;
+      } catch (fallbackError) {
+        throw new Error("Registration failed on both backend and localStorage");
+      }
     }
   };
 
