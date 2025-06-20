@@ -62,7 +62,10 @@ const MenuManagement = () => {
 
   // Load menu items for the shop
   const loadMenuItems = async () => {
-    if (!shopId) return;
+    if (!shopId) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -80,8 +83,29 @@ const MenuManagement = () => {
   useEffect(() => {
     if (shopId) {
       loadMenuItems();
+    } else {
+      setIsLoading(false);
     }
   }, [shopId]);
+
+  // Show error if no shopId provided
+  if (!shopId && !isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Shop Not Found
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Please select a shop to manage its menu.
+          </p>
+          <Link to="/shop-dashboard">
+            <Button>Return to Dashboard</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   // Form state for adding/editing items
   const [formData, setFormData] = useState({
