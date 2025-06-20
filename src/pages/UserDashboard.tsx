@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import ShopService, { Shop } from "@/lib/shopService";
-import { DemoModeBanner } from "@/components/DemoModeBanner";
+import { ConnectionStatusBanner } from "@/components/ConnectionStatusBanner";
 
 const UserDashboard = () => {
   const { user, logout } = useSimpleAuth();
