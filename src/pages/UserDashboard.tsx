@@ -34,10 +34,7 @@ const UserDashboard = () => {
       }
     };
 
-    // Only fetch once
-    if (shops.length === 0 && !isLoading) {
-      fetchShops();
-    }
+    fetchShops();
   }, []);
 
   const categories = ["All", ...new Set(shops.map((shop) => shop.category))];
