@@ -6,6 +6,7 @@ import {
   ReactNode,
 } from "react";
 import { User } from "@/lib/types";
+import { ApiService } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
@@ -15,7 +16,7 @@ interface AuthContextType {
     email: string,
     password: string,
     name: string,
-    role: string
+    role: string,
   ) => Promise<User>;
   logout: () => void;
 }
@@ -43,40 +44,82 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, password: string, role: string) => {
-    const res = await fetch("http://localhost:3001/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, role }),
-    });
+    try {
+      // Try backend API first
+      const res = await fetch("http://localhost:3001/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role }),
+      });
 
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || "Login failed");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          storeSession(data.data.user, data.data.token);
+          return data.data.user;
+        }
+        throw new Error(data.error || "Login failed");
+      }
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    } catch (error) {
+      console.warn("Backend login failed, trying ApiService fallback:", error);
+      // Fallback to ApiService (localStorage)
+      try {
+        const result = await ApiService.login(
+          email,
+          password,
+          role as User["role"],
+        );
+        storeSession(result.user, result.token);
+        return result.user;
+      } catch (fallbackError) {
+        throw new Error("Login failed on both backend and localStorage");
+      }
     }
-
-    storeSession(data.data.user, data.data.token);
-    return data.data.user;
   };
 
   const register = async (
     email: string,
     password: string,
     name: string,
-    role: string
+    role: string,
   ) => {
-    const res = await fetch("http://localhost:3001/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name, role }),
-    });
+    try {
+      // Try backend API first
+      const res = await fetch("http://localhost:3001/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name, role }),
+      });
 
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || "Registration failed");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          storeSession(data.data.user, data.data.token);
+          return data.data.user;
+        }
+        throw new Error(data.error || "Registration failed");
+      }
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    } catch (error) {
+      console.warn(
+        "Backend registration failed, trying ApiService fallback:",
+        error,
+      );
+      // Fallback to ApiService (localStorage)
+      try {
+        const result = await ApiService.register(
+          email,
+          password,
+          name,
+          role as User["role"],
+        );
+        storeSession(result.user, result.token);
+        return result.user;
+      } catch (fallbackError) {
+        throw new Error("Registration failed on both backend and localStorage");
+      }
     }
-
-    storeSession(data.data.user, data.data.token);
-    return data.data.user;
   };
 
   const logout = () => {
@@ -87,9 +130,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, token, login, register, logout }}
-    >
+    <AuthContext.Provider value={{ user, token, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

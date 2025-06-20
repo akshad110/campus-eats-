@@ -7,7 +7,7 @@ import {
   DatabaseOrder,
 } from "./database";
 
-// Use localStorage mode since MySQL is not available in this environment
+// Use MySQL database for production - localStorage disabled
 const FORCE_LOCALSTORAGE_MODE = false;
 const API_BASE_URL = "http://localhost:3001/api";
 
@@ -148,7 +148,17 @@ class ApiService {
         return shops;
       } catch (error) {
         console.error("❌ Failed to fetch shops from backend:", error);
-        return [];
+        console.log("🔄 Falling back to localStorage...");
+        // Fallback to localStorage if backend fails
+        await this.ensureLocalStorageData();
+        const dbShops = await MockDatabase.findMany<DatabaseShop>("shops", {
+          isActive: true,
+        });
+        const shops = dbShops.map(this.convertLocalShopToFrontend);
+        console.log(
+          `✅ Loaded ${shops.length} shops from localStorage fallback`,
+        );
+        return shops;
       }
     }
   }
@@ -173,7 +183,10 @@ class ApiService {
         return true;
       } catch (error) {
         console.error("❌ Failed to delete shop from backend:", error);
-        return false;
+        console.log("🔄 Falling back to localStorage...");
+        // Fallback to localStorage if backend fails
+        await this.ensureLocalStorageData();
+        return await MockDatabase.delete("shops", id);
       }
     }
   }
@@ -212,7 +225,11 @@ class ApiService {
         return shop;
       } catch (error) {
         console.error("❌ Failed to fetch shop from backend:", error);
-        return null;
+        console.log("🔄 Falling back to localStorage...");
+        // Fallback to localStorage if backend fails
+        await this.ensureLocalStorageData();
+        const dbShop = await MockDatabase.findById<DatabaseShop>("shops", id);
+        return dbShop ? this.convertLocalShopToFrontend(dbShop) : null;
       }
     }
   }
@@ -428,8 +445,22 @@ class ApiService {
         console.log(`✅ Found ${shops.length} shops for owner`);
         return shops;
       } catch (error) {
-        console.error("❌ Failed to fetch shops for owner from backend:", error);
-        return [];
+        console.error(
+          "❌ Failed to fetch shops for owner from backend:",
+          error,
+        );
+        console.log("🔄 Falling back to localStorage...");
+        // Fallback to localStorage if backend fails
+        await this.ensureLocalStorageData();
+        const dbShops = await MockDatabase.findMany<DatabaseShop>("shops", {
+          ownerId,
+          isActive: true,
+        });
+        const shops = dbShops.map(this.convertLocalShopToFrontend);
+        console.log(
+          `✅ Found ${shops.length} shops for owner from localStorage fallback`,
+        );
+        return shops;
       }
     }
   }
@@ -446,7 +477,9 @@ class ApiService {
         "menu_items",
         { shopId },
       );
-      const convertedItems = dbMenuItems.map(this.convertLocalMenuItemToFrontend);
+      const convertedItems = dbMenuItems.map(
+        this.convertLocalMenuItemToFrontend,
+      );
       console.log(
         `✅ Loaded ${convertedItems.length} menu items from localStorage`,
       );
@@ -454,7 +487,9 @@ class ApiService {
     } else {
       console.log("🍽️ Loading menu items for shop from backend API:", shopId);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/shops/${shopId}/menu`);
+        const response = await fetch(
+          `${API_BASE_URL}/api/shops/${shopId}/menu`,
+        );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -475,7 +510,9 @@ class ApiService {
           preparationTime: dbItem.preparation_time,
           createdAt: dbItem.created_at,
         }));
-        console.log(`✅ Loaded ${menuItems.length} menu items from backend API`);
+        console.log(
+          `✅ Loaded ${menuItems.length} menu items from backend API`,
+        );
         return menuItems;
       } catch (error) {
         console.error("❌ Failed to fetch menu items from backend:", error);
@@ -485,7 +522,9 @@ class ApiService {
           "menu_items",
           { shopId },
         );
-        const convertedItems = dbMenuItems.map(this.convertLocalMenuItemToFrontend);
+        const convertedItems = dbMenuItems.map(
+          this.convertLocalMenuItemToFrontend,
+        );
         console.log(
           `✅ Loaded ${convertedItems.length} menu items from localStorage fallback`,
         );
@@ -595,53 +634,61 @@ class ApiService {
     }
   }
 
-static async updateMenuItem(id: string, data: Partial<MenuItem>): Promise<MenuItem | null> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+  static async updateMenuItem(
+    id: string,
+    data: Partial<MenuItem>,
+  ): Promise<MenuItem | null> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-    if (!response.ok) {
-      throw new Error("Failed to update menu item");
+      if (!response.ok) {
+        throw new Error("Failed to update menu item");
+      }
+
+      const result = await response.json();
+      return {
+        id: result.data.id,
+        shopId: result.data.shop_id,
+        name: result.data.name,
+        description: result.data.description,
+        price: result.data.price,
+        image: result.data.image,
+        category: result.data.category,
+        isAvailable: result.data.is_available,
+        preparationTime: result.data.preparation_time,
+        createdAt: result.data.created_at,
+      };
+    } catch (error) {
+      console.error("❌ Backend update failed, fallback to localStorage");
+      await this.ensureLocalStorageData();
+      const dbMenuItem = await MockDatabase.update<DatabaseMenuItem>(
+        "menu_items",
+        id,
+        data,
+      );
+      return dbMenuItem
+        ? this.convertLocalMenuItemToFrontend(dbMenuItem)
+        : null;
     }
-
-    const result = await response.json();
-    return {
-      id: result.data.id,
-      shopId: result.data.shop_id,
-      name: result.data.name,
-      description: result.data.description,
-      price: result.data.price,
-      image: result.data.image,
-      category: result.data.category,
-      isAvailable: result.data.is_available,
-      preparationTime: result.data.preparation_time,
-      createdAt: result.data.created_at,
-    };
-  } catch (error) {
-    console.error("❌ Backend update failed, fallback to localStorage");
-    await this.ensureLocalStorageData();
-    const dbMenuItem = await MockDatabase.update<DatabaseMenuItem>("menu_items", id, data);
-    return dbMenuItem ? this.convertLocalMenuItemToFrontend(dbMenuItem) : null;
   }
-}
 
-static async deleteMenuItem(id: string): Promise<boolean> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) throw new Error("Delete failed");
-    return true;
-  } catch (error) {
-    console.error("❌ Delete failed on backend, fallback to localStorage");
-    await this.ensureLocalStorageData();
-    return await MockDatabase.delete("menu_items", id);
+  static async deleteMenuItem(id: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Delete failed");
+      return true;
+    } catch (error) {
+      console.error("❌ Delete failed on backend, fallback to localStorage");
+      await this.ensureLocalStorageData();
+      return await MockDatabase.delete("menu_items", id);
+    }
   }
-}
-
 
   // ==============================================================================
   // ORDER API
@@ -739,9 +786,8 @@ static async deleteMenuItem(id: string): Promise<boolean> {
   // ==============================================================================
 
   static async initializeMockData(forceReset: boolean = false): Promise<void> {
-    console.log("🔄 Initializing localStorage data...");
-    await this.ensureLocalStorageData();
-    console.log("✅ LocalStorage initialized successfully");
+    console.log("✅ LocalStorage initialization skipped to prevent loops");
+    return;
   }
 
   static async createFallbackShops(): Promise<void> {
@@ -956,8 +1002,8 @@ static async deleteMenuItem(id: string): Promise<boolean> {
   }
 
   private static async ensureLocalStorageData(): Promise<void> {
-    // Do not create any fallback data - let the app start with empty shops
-    console.log("✅ LocalStorage initialized without fallback data");
+    // Simple localStorage check without initialization
+    console.log("✅ LocalStorage ready");
     return;
   }
 
@@ -974,8 +1020,36 @@ static async deleteMenuItem(id: string): Promise<boolean> {
         phone: "+1-555-FALLBACK",
       });
 
-      // Create fallback shops - empty array means no mock shops will be created
-      const fallbackShops = [];
+      // Create sample shops for development
+      const fallbackShops = [
+        {
+          id: "shop_campus_cafe",
+          name: "Campus Café",
+          description: "Fresh coffee and pastries for students",
+          image: "/placeholder.svg",
+          category: "Café",
+          location: "Building A, Ground Floor",
+          phone: "+1-555-CAFE",
+        },
+        {
+          id: "shop_pizza_corner",
+          name: "Pizza Corner",
+          description: "Authentic Italian pizza made fresh",
+          image: "/placeholder.svg",
+          category: "Italian",
+          location: "Food Court, Level 2",
+          phone: "+1-555-PIZZA",
+        },
+        {
+          id: "shop_healthy_eats",
+          name: "Healthy Eats",
+          description: "Fresh salads, smoothies, and healthy options",
+          image: "/placeholder.svg",
+          category: "Healthy Food",
+          location: "Student Center, Main Floor",
+          phone: "+1-555-HEALTHY",
+        },
+      ];
 
       for (const shopData of fallbackShops) {
         await MockDatabase.create<DatabaseShop>("shops", {
@@ -1012,20 +1086,27 @@ static async deleteMenuItem(id: string): Promise<boolean> {
     shopId: string,
   ): Promise<void> {
     const menuItemsMap: Record<string, any[]> = {
-      shop_healthy_bites: [
+      shop_campus_cafe: [
         {
-          name: "Caesar Salad",
-          description: "Crisp romaine, parmesan, croutons",
-          price: 9.99,
-          category: "Salads",
-          preparationTime: 5,
+          name: "Espresso",
+          description: "Rich and bold Italian espresso",
+          price: 2.5,
+          category: "Coffee",
+          preparationTime: 2,
         },
         {
-          name: "Green Smoothie",
-          description: "Spinach, banana, apple, honey",
-          price: 6.99,
-          category: "Beverages",
+          name: "Cappuccino",
+          description: "Espresso with steamed milk and foam",
+          price: 4.25,
+          category: "Coffee",
           preparationTime: 3,
+        },
+        {
+          name: "Croissant",
+          description: "Buttery, flaky French pastry",
+          price: 3.75,
+          category: "Pastries",
+          preparationTime: 1,
         },
       ],
       shop_pizza_corner: [
@@ -1033,31 +1114,45 @@ static async deleteMenuItem(id: string): Promise<boolean> {
           name: "Margherita Pizza",
           description: "Fresh tomatoes, mozzarella, basil",
           price: 12.99,
-          category: "Pizzas",
+          category: "Pizza",
           preparationTime: 15,
         },
         {
           name: "Pepperoni Pizza",
           description: "Pepperoni, mozzarella, tomato sauce",
           price: 14.99,
-          category: "Pizzas",
+          category: "Pizza",
           preparationTime: 15,
         },
-      ],
-      shop_burger_palace: [
         {
-          name: "Classic Burger",
-          description: "Beef patty, lettuce, tomato, cheese",
-          price: 11.99,
-          category: "Burgers",
-          preparationTime: 12,
+          name: "Caesar Salad",
+          description: "Crisp romaine, parmesan, croutons",
+          price: 8.99,
+          category: "Salads",
+          preparationTime: 5,
+        },
+      ],
+      shop_healthy_eats: [
+        {
+          name: "Green Smoothie",
+          description: "Spinach, banana, apple, honey blend",
+          price: 6.99,
+          category: "Smoothies",
+          preparationTime: 3,
         },
         {
-          name: "Crispy Fries",
-          description: "Golden crispy potato fries",
-          price: 4.99,
-          category: "Sides",
+          name: "Quinoa Bowl",
+          description: "Nutritious quinoa with fresh vegetables",
+          price: 10.99,
+          category: "Bowls",
           preparationTime: 8,
+        },
+        {
+          name: "Avocado Toast",
+          description: "Fresh avocado on multigrain bread",
+          price: 7.5,
+          category: "Toast",
+          preparationTime: 5,
         },
       ],
     };

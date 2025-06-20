@@ -24,68 +24,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  useEffect(() => {
-    // Suppress fetch errors globally to prevent console spam
-    const originalConsoleError = console.error;
-    console.error = (...args) => {
-      const message = args[0];
-      if (
-        typeof message === "string" &&
-        (message.includes("Failed to fetch") ||
-          message.includes("NetworkError") ||
-          message.includes("ERR_NETWORK"))
-      ) {
-        // Silently ignore network errors - they're handled by fallback logic
-        return;
-      }
-      originalConsoleError.apply(console, args);
-    };
-
-    // Handle unhandled promise rejections for fetch errors
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      if (
-        event.reason &&
-        typeof event.reason === "object" &&
-        (event.reason.message?.includes("Failed to fetch") ||
-          event.reason.message?.includes("NetworkError") ||
-          event.reason.name === "TypeError")
-      ) {
-        // Prevent the error from being logged
-        event.preventDefault();
-      }
-    };
-
-    window.addEventListener("unhandledrejection", handleUnhandledRejection);
-
-    // Initialize app data
-    ApiService.initializeMockData(true).catch(() => {
-      // Silently handle initialization errors
-    });
-
-    // Make debug functions available globally
-    (window as any).debugApp = {
-      // inspectStorage: StorageDebugger.inspectStorage,
-      // clearData: StorageDebugger.clearCampusEatsData,
-      // createTestShops: StorageDebugger.createTestShops,
-      reinitialize: () => ApiService.initializeMockData(true),
-    };
-
-    console.log("🔧 Debug functions available at window.debugApp");
-    console.log("Available methods:");
-    console.log("- window.debugApp.inspectStorage()");
-    console.log("- window.debugApp.clearData()");
-    console.log("- window.debugApp.createTestShops()");
-    console.log("- window.debugApp.reinitialize()");
-
-    // Cleanup
-    return () => {
-      console.error = originalConsoleError;
-      window.removeEventListener(
-        "unhandledrejection",
-        handleUnhandledRejection,
-      );
-    };
-  }, []);
+  // Removed complex useEffect to prevent infinite loops
 
   return (
     <>

@@ -47,48 +47,8 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const removeMockShops = async () => {
-      // Only remove specific mock shops instead of clearing everything
-      console.log("🧹 Checking for mock shops to remove...");
-
-      const mockShopNames = [
-        "Healthy Bites",
-        "Pizza Corner",
-        "Burger Palace",
-        "Akshad",
-        "Akshad_6",
-      ];
-
-      try {
-        const allShops = await ApiService.getShops();
-        let hasChanges = false;
-
-        // Remove only mock shops, keep user-created shops
-        for (const shop of allShops) {
-          if (mockShopNames.includes(shop.name)) {
-            try {
-              await ApiService.deleteShop(shop.id);
-              console.log(`🗑️ Deleted mock shop: ${shop.name}`);
-              hasChanges = true;
-            } catch (error) {
-              console.error(`Failed to delete mock shop ${shop.name}:`, error);
-            }
-          }
-        }
-
-        if (hasChanges) {
-          console.log("✅ Mock shops cleanup completed");
-        } else {
-          console.log("✅ No mock shops found to remove");
-        }
-      } catch (error) {
-        console.error("❌ Error during mock shop cleanup:", error);
-      }
-    };
-
-    removeMockShops().then(() => {
-      fetchShops();
-    });
+    // Simply fetch shops without cleanup to prevent infinite loops
+    fetchShops();
   }, [user]);
 
   const refreshShops = async () => {

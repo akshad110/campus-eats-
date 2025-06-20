@@ -14,9 +14,10 @@ app.use(express.json());
 
 // MySQL Configuration
 const dbConfig = {
-  host: "localhost",
-  user: "root",
-  password: "WJ28@krhps",
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "campuseats",
+  password: process.env.DB_PASSWORD || "campuseats123",
+  database: process.env.DB_NAME || "campuseats",
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -326,7 +327,7 @@ app.get("/api/shops/owner/:ownerId", async (req, res) => {
 app.get("/api/shops", async (req, res) => {
   try {
     const [shops] = await pool.execute(
-      "SELECT * FROM shops WHERE is_active = TRUE"
+      "SELECT * FROM shops WHERE is_active = TRUE",
     );
     res.json({ success: true, data: shops });
   } catch (error) {
@@ -341,7 +342,7 @@ app.delete("/api/shops/:id", async (req, res) => {
     // Soft delete: set is_active to false
     const [result] = await pool.execute(
       "UPDATE shops SET is_active = FALSE WHERE id = ?",
-      [id]
+      [id],
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, error: "Shop not found" });
@@ -571,7 +572,7 @@ app.get("/api/shops/:shopId/menu", async (req, res) => {
     const { shopId } = req.params;
     const [items] = await pool.execute(
       "SELECT * FROM menu_items WHERE shop_id = ? AND is_available = TRUE",
-      [shopId]
+      [shopId],
     );
     res.json({ success: true, data: items });
   } catch (error) {
@@ -580,13 +581,12 @@ app.get("/api/shops/:shopId/menu", async (req, res) => {
   }
 });
 
-
 app.get("/api/shops/:shopId/menu", async (req, res) => {
   try {
     const { shopId } = req.params;
     const [items] = await pool.execute(
       "SELECT * FROM menu_items WHERE shop_id = ? AND is_available = TRUE",
-      [shopId]
+      [shopId],
     );
     res.json({ success: true, data: items });
   } catch (err) {
