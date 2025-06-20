@@ -432,7 +432,18 @@ class ApiService {
           "❌ Failed to fetch shops for owner from backend:",
           error,
         );
-        return [];
+        console.log("🔄 Falling back to localStorage...");
+        // Fallback to localStorage if backend fails
+        await this.ensureLocalStorageData();
+        const dbShops = await MockDatabase.findMany<DatabaseShop>("shops", {
+          ownerId,
+          isActive: true,
+        });
+        const shops = dbShops.map(this.convertLocalShopToFrontend);
+        console.log(
+          `✅ Found ${shops.length} shops for owner from localStorage fallback`,
+        );
+        return shops;
       }
     }
   }
