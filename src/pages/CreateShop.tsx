@@ -27,6 +27,14 @@ const CreateShop = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
+  // Redirect if user is not logged in
+  useEffect(() => {
+    if (!user) {
+      console.log("User not authenticated, redirecting to login");
+      navigate("/auth");
+    }
+  }, [user, navigate]);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
