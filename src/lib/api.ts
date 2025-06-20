@@ -246,8 +246,10 @@ class ApiService {
       console.log("🏗️ Creating shop in localStorage");
       await this.ensureLocalStorageData();
 
-      // Get user data for owner ID
-      const userData = localStorage.getItem("user_data");
+      // Get user data for owner ID - try both possible keys
+      let userData =
+        localStorage.getItem("simple_user") ||
+        localStorage.getItem("user_data");
       if (!userData) {
         throw new Error("User not logged in");
       }
@@ -470,7 +472,7 @@ class ApiService {
         });
         const shops = dbShops.map(this.convertLocalShopToFrontend);
         console.log(
-          `✅ Found ${shops.length} shops for owner from localStorage fallback`,
+          `�� Found ${shops.length} shops for owner from localStorage fallback`,
         );
         return shops;
       }
