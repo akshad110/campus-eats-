@@ -1031,8 +1031,36 @@ class ApiService {
         phone: "+1-555-FALLBACK",
       });
 
-      // Create fallback shops - empty array means no mock shops will be created
-      const fallbackShops = [];
+      // Create sample shops for development
+      const fallbackShops = [
+        {
+          id: "shop_campus_cafe",
+          name: "Campus Café",
+          description: "Fresh coffee and pastries for students",
+          image: "/placeholder.svg",
+          category: "Café",
+          location: "Building A, Ground Floor",
+          phone: "+1-555-CAFE",
+        },
+        {
+          id: "shop_pizza_corner",
+          name: "Pizza Corner",
+          description: "Authentic Italian pizza made fresh",
+          image: "/placeholder.svg",
+          category: "Italian",
+          location: "Food Court, Level 2",
+          phone: "+1-555-PIZZA",
+        },
+        {
+          id: "shop_healthy_eats",
+          name: "Healthy Eats",
+          description: "Fresh salads, smoothies, and healthy options",
+          image: "/placeholder.svg",
+          category: "Healthy Food",
+          location: "Student Center, Main Floor",
+          phone: "+1-555-HEALTHY",
+        },
+      ];
 
       for (const shopData of fallbackShops) {
         await MockDatabase.create<DatabaseShop>("shops", {
