@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import ShopService, { Shop } from "@/lib/shopService";
 
 // Mock data for shop owner
 const mockShopData = {
@@ -56,6 +57,26 @@ const mockShopData = {
 const ShopOwnerDashboard = () => {
   const { user, logout } = useSimpleAuth();
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchShops = async () => {
+      if (!user) return;
+
+      try {
+        setIsLoading(true);
+        const userShops = await ShopService.getShopsByOwner(user.id);
+        setShops(userShops);
+      } catch (error) {
+        console.error("Error fetching shops:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchShops();
+  }, [user]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -105,59 +126,77 @@ const ShopOwnerDashboard = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Shop Status */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                {mockShopData.shop.name}
-              </h2>
-              <p className="text-gray-600">{mockShopData.shop.description}</p>
+          {isLoading ? (
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
             </div>
-            <Badge
-              className={
-                mockShopData.shop.isActive ? "bg-green-500" : "bg-red-500"
-              }
-            >
-              {mockShopData.shop.isActive ? "Open" : "Closed"}
-            </Badge>
-          </div>
+          ) : shops.length > 0 ? (
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                  {shops[0].name}
+                </h2>
+                <p className="text-gray-600">{shops[0].description}</p>
+              </div>
+              <Badge
+                className={shops[0].isActive ? "bg-green-500" : "bg-red-500"}
+              >
+                {shops[0].isActive ? "Open" : "Closed"}
+              </Badge>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Welcome to CampusEats!
+              </h2>
+              <p className="text-gray-600 mb-6">
+                You don't have any shops yet. Create your first shop to start
+                selling food on campus.
+              </p>
+              <Link to="/create-shop">
+                <Button size="lg">Create Your First Shop</Button>
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-blue-600">
-                {mockShopData.shop.todayOrders}
-              </div>
-              <p className="text-sm text-gray-600">Orders Today</p>
-            </CardContent>
-          </Card>
+        {shops.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-2xl font-bold text-blue-600">0</div>
+                <p className="text-sm text-gray-600">Orders Today</p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-green-600">
-                ${mockShopData.shop.totalRevenue}
-              </div>
-              <p className="text-sm text-gray-600">Today's Revenue</p>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-2xl font-bold text-green-600">$0.00</div>
+                <p className="text-sm text-gray-600">Today's Revenue</p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-yellow-600">
-                ⭐ {mockShopData.shop.avgRating}
-              </div>
-              <p className="text-sm text-gray-600">Average Rating</p>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-2xl font-bold text-yellow-600">
+                  ⭐ {shops[0].rating?.toFixed(1) || "4.0"}
+                </div>
+                <p className="text-sm text-gray-600">Average Rating</p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-purple-600">3</div>
-              <p className="text-sm text-gray-600">Pending Orders</p>
-            </CardContent>
-          </Card>
-        </div>
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-2xl font-bold text-purple-600">
+                  {shops.length}
+                </div>
+                <p className="text-sm text-gray-600">Your Shops</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
