@@ -30,11 +30,27 @@ const CreateShop = () => {
   // Redirect if user is not logged in
   useEffect(() => {
     console.log("CreateShop: Current user:", user);
-    if (!user) {
-      console.log("User not authenticated, redirecting to login");
-      navigate("/auth");
-    }
+    // Add a small delay to allow for auth state to load
+    const timer = setTimeout(() => {
+      if (!user) {
+        console.log("User not authenticated, redirecting to login");
+        navigate("/auth");
+      }
+    }, 100);
+    return () => clearTimeout(timer);
   }, [user, navigate]);
+
+  // Show loading while checking authentication
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p>Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   const [formData, setFormData] = useState({
     name: "",
