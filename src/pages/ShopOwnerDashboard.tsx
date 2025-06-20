@@ -179,6 +179,26 @@ const ShopOwnerDashboard = () => {
           )}
         </div>
 
+        {/* Shop Management Actions */}
+        {shops.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Manage Your Shop</h3>
+              <div className="flex space-x-3">
+                <Link to={`/menu-management?shopId=${shops[0].id}`}>
+                  <Button variant="outline">Manage Menu</Button>
+                </Link>
+                <Link to={`/order-management?shopId=${shops[0].id}`}>
+                  <Button variant="outline">Manage Orders</Button>
+                </Link>
+                <Link to="/create-shop">
+                  <Button>Create Another Shop</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats Overview */}
         {shops.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -199,7 +219,7 @@ const ShopOwnerDashboard = () => {
             <Card>
               <CardContent className="p-6">
                 <div className="text-2xl font-bold text-yellow-600">
-                  ⭐ {shops[0].rating?.toFixed(1) || "4.0"}
+                  ⭐ {shops[0]?.rating?.toFixed(1) || "4.0"}
                 </div>
                 <p className="text-sm text-gray-600">Average Rating</p>
               </CardContent>
